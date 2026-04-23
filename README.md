@@ -4,15 +4,15 @@ Traditional Chinese README: [README.zh-TW.md](./README.zh-TW.md)
 
 Codex-first 2D sprite generation skill for game-ready pixel assets.
 
-This repository currently ships one generic skill: [`skills/generate2dsprite`](skills/generate2dsprite).
+This repository currently ships one generic skill: [`skills/generate2dsprite`](./skills/generate2dsprite).
 
-It is designed for Codex first because Codex has built-in image generation. That means you can stay inside one agent workflow:
+Codex is the primary target because Codex already has built-in image generation. That lets one agent handle the full loop:
 
-1. Let the agent plan the asset.
-2. Let Codex generate the raw sprite sheet.
-3. Let the local processor remove the magenta background, split frames, align sprites, run basic QC, and export transparent PNG/GIF outputs.
+1. Plan the asset.
+2. Generate the raw sprite sheet.
+3. Run deterministic local post-processing for chroma-key cleanup, frame extraction, alignment, QC, and transparent PNG/GIF export.
 
-The current focus is self-contained 2D assets, not whole game packs.
+The current focus is self-contained 2D assets, not full game packs.
 
 ## What It Can Generate
 
@@ -23,10 +23,7 @@ The current focus is self-contained 2D assets, not whole game packs.
 - Projectiles
 - Impacts and explosions
 - FX sheets
-- Small bundles such as:
-  - `unit_bundle`
-  - `spell_bundle`
-  - `combat_bundle`
+- Small bundles such as `unit_bundle`, `spell_bundle`, and `combat_bundle`
 
 ## Why Codex First
 
@@ -34,23 +31,23 @@ This repo is intentionally Codex-first because Codex can generate images directl
 
 That gives you a much cleaner pipeline:
 
-- no extra image API wiring
-- no separate prompt builder service
-- no external sprite backend
-- one agent decides the plan
-- one local processor handles deterministic cleanup and export
+- No separate image API wiring
+- No external sprite backend
+- No extra prompt-builder service
+- One agent decides the asset plan
+- One local processor handles deterministic cleanup and export
 
-The processor script is not the creative brain. The agent decides:
+The script is not the creative brain. The agent decides:
 
-- asset type
-- action type
-- bundle shape
-- sheet layout
-- frame count
-- alignment strategy
-- whether detached effects should be kept or filtered
+- Asset type
+- Action type
+- Bundle shape
+- Sheet layout
+- Frame count
+- Alignment strategy
+- Whether detached effects should be kept or filtered
 
-The script only performs deterministic pixel operations.
+The Python script only performs deterministic pixel operations.
 
 ## Repository Layout
 
@@ -58,6 +55,8 @@ The script only performs deterministic pixel operations.
 agent-sprite-forge/
   README.md
   README.zh-TW.md
+  requirements.txt
+  src/
   skills/
     generate2dsprite/
       SKILL.md
@@ -74,13 +73,15 @@ agent-sprite-forge/
 
 ### Option 1: Windows PowerShell
 
-Clone the repo, then copy the skill into your Codex skills directory:
+Clone the repo, install the local processor dependencies, then copy the skill into your Codex skills directory:
 
 ```powershell
 git clone https://github.com/0x0funky/agent-sprite-forge.git
+cd .\agent-sprite-forge
+python -m pip install -r .\requirements.txt
 New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.codex\skills" | Out-Null
 Copy-Item -Recurse -Force `
-  ".\agent-sprite-forge\skills\generate2dsprite" `
+  ".\skills\generate2dsprite" `
   "$env:USERPROFILE\.codex\skills\generate2dsprite"
 ```
 
@@ -88,11 +89,28 @@ Copy-Item -Recurse -Force `
 
 ```bash
 git clone https://github.com/0x0funky/agent-sprite-forge.git
+cd ./agent-sprite-forge
+python3 -m pip install -r ./requirements.txt
 mkdir -p ~/.codex/skills
-cp -R ./agent-sprite-forge/skills/generate2dsprite ~/.codex/skills/generate2dsprite
+cp -R ./skills/generate2dsprite ~/.codex/skills/generate2dsprite
 ```
 
-After installation, start a new Codex session so the skill is loaded cleanly.
+Start a new Codex session after installation so the skill is loaded cleanly.
+
+## Python Requirements
+
+The local post-processor depends on:
+
+- `Pillow`
+- `numpy`
+
+They are listed in [`requirements.txt`](./requirements.txt). Codex handles image generation itself, but these Python packages are still needed for:
+
+- Magenta background removal
+- Frame splitting
+- Bounding-box extraction
+- Alignment and rescaling
+- Transparent GIF and PNG export
 
 ## Suggested Prompts
 
@@ -138,6 +156,48 @@ Use $generate2dsprite to create a golden divine boar 2x2 idle animation.
 Use $generate2dsprite to create a Naruto-style rasengan cast sheet in 2x3.
 ```
 
+## Showcase
+
+### 1. Naruto Using Rasengan
+
+Prompt:
+
+```text
+使用$generate2dsprite幫我做一個鳴人使用螺旋丸的元素
+```
+
+Result:
+
+![Naruto Rasengan](./src/naruto-rasengan.gif)
+
+### 2. Crocodile Playing With a Stone
+
+Reference image:
+
+![Reference 1](./src/ref1.jpg)
+
+Prompt:
+
+```text
+幫我使用$generate2dsprite做一個這隻鱷魚玩手上石頭的元素
+```
+
+Result:
+
+![Croc Stone Play](./src/croc_stone_play.gif)
+
+### 3. Goku Attacking With Kamehameha
+
+Prompt:
+
+```text
+help me to use$generate2dsprite to create a goku is attacking with Kamehameha
+```
+
+Result:
+
+![Goku Kamehameha](./src/goku-kame.gif)
+
 ## What You Get
 
 For a typical sheet output:
@@ -145,7 +205,7 @@ For a typical sheet output:
 - `raw-sheet.png`
 - `raw-sheet-clean.png`
 - `sheet-transparent.png`
-- frame PNGs
+- Frame PNGs
 - `animation.gif`
 - `prompt-used.txt`
 - `pipeline-meta.json`
@@ -154,11 +214,7 @@ For player walk sheets, you also get direction strips and per-direction GIFs.
 
 ## Notes
 
-- Best results come from prompts that clearly specify:
-  - view
-  - action
-  - sheet size or expected motion style
-  - containment rules
+- Best results come from prompts that clearly specify view, action, and the desired motion style.
 - Large creatures often work better as `3x3 idle`.
 - Small spells and projectiles often work better as `1x4`, `2x2`, or `2x3`.
 - For commercial projects, prefer original characters or IP that you control.
