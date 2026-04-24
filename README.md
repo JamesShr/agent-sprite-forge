@@ -306,6 +306,16 @@ For player walk sheets, you also get direction strips and per-direction GIFs.
 - Small spells and projectiles often work better as `1x4`, `2x2`, or `2x3`.
 - For commercial projects, prefer original characters or IP that you control.
 
+## Star History
+
+<a href="https://www.star-history.com/?repos=0x0funky%2Fagent-sprite-forge&type=date&legend=top-left">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=0x0funky/agent-sprite-forge&type=date&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=0x0funky/agent-sprite-forge&type=date&legend=top-left" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=0x0funky/agent-sprite-forge&type=date&legend=top-left" />
+ </picture>
+</a>
+
 ## License
 
 MIT. See [LICENSE](./LICENSE).

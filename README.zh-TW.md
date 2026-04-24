@@ -313,6 +313,16 @@ Use  $generate2dsprite to create a Naruto-style rasengan cast sheet in 2x3.
 - 小型 spell / projectile 通常比較適合 `1x4`、`2x2` 或 `2x3`。
 - 如果要商用，建議優先使用原創角色或你自己持有權利的 IP。
 
+## Star History
+
+<a href="https://www.star-history.com/?repos=0x0funky%2Fagent-sprite-forge&type=date&legend=top-left">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=0x0funky/agent-sprite-forge&type=date&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=0x0funky/agent-sprite-forge&type=date&legend=top-left" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=0x0funky/agent-sprite-forge&type=date&legend=top-left" />
+ </picture>
+</a>
+
 ## 授權
 
 MIT。請見 [LICENSE](./LICENSE)。
