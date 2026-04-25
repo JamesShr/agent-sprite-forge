@@ -131,6 +131,46 @@ Retro JRPG pixel-art style.
   </tr>
 </table>
 
+### Codex One-Shot Playable Games
+
+End-to-end playable games designed and built by Codex in a single prompt, with every visual asset produced through `$generate2dsprite`.
+
+#### Neon Breach — Cyberpunk Side-Scroller
+
+<p align="center">
+  <img src="./src/neon-breach.png" alt="Neon Breach cyberpunk side-scroller" width="720" />
+</p>
+
+Prompt:
+
+```text
+use $generate2dsprite to create a 2D side-scrolling game similar to Mega Man. It should include attack mechanics, map elements, and all the essential features. I would like you to design it, and all the necessary assets should be created using this skill. It needs to be an actually playable game, with a cyberpunk story setting.
+```
+
+#### 晴嵐御魂錄 — Sengoku-Era Pokémon-like
+
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <img src="./src/pokemonlike2.png" alt="Sengoku starter selection screen" width="360" />
+      <br />
+      <strong>Starter selection</strong>
+    </td>
+    <td align="center" width="50%">
+      <img src="./src/pokemonlike.png" alt="Sengoku battle screen" width="360" />
+      <br />
+      <strong>Battle scene</strong>
+    </td>
+  </tr>
+</table>
+
+Prompt:
+
+```text
+Use $generate2dsprite to create a 2D game similar to Pokemon. You only need to build one scene for now. It must include a starter monster selection mechanic, a battle screen, and all basic gameplay functions. I would like you to design all the elements and the story, and you can also decide which game engine to use. Use this skill to create any assets you need. The story should be set in the Sengoku period. Can you try putting this together for me?
+Please also pay attention to the size of the elements (the generated sprites need to be proportionally correct when placed into the game), and a game map must be generated as well. Basically, just help me make a game like this—I believe you won't have any problem doing this with that skill! Just one scene is enough, and there's no need for too many monster characters. Let's just start with a few, and we can slowly expand on it later!
+```
+
 Codex-first 2D sprite generation skill for game-ready pixel assets.
 
 This repository currently ships one generic skill: [`skills/generate2dsprite`](./skills/generate2dsprite).

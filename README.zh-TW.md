@@ -131,7 +131,47 @@ Retro JRPG pixel-art style.
   </tr>
 </table>
 
-這是一個以 Codex 為核心的 2D sprite 生成 skill，用來產出可直接拿去做遊戲資產的 pixel art。
+### Codex 一次到位的可玩遊戲
+
+完全由 Codex 在單一 prompt 內規劃並完成的可玩遊戲,所有美術資產都透過 `$generate2dsprite` 生成。
+
+#### Neon Breach — 賽博龐克橫向捲軸
+
+<p align="center">
+  <img src="./src/neon-breach.png" alt="Neon Breach 賽博龐克橫向捲軸" width="720" />
+</p>
+
+Prompt:
+
+```text
+use $generate2dsprite to create a 2D side-scrolling game similar to Mega Man. It should include attack mechanics, map elements, and all the essential features. I would like you to design it, and all the necessary assets should be created using this skill. It needs to be an actually playable game, with a cyberpunk story setting.
+```
+
+#### 晴嵐御魂錄 — 戰國時代的 Pokémon-like
+
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <img src="./src/pokemonlike2.png" alt="戰國御魂選擇畫面" width="360" />
+      <br />
+      <strong>初始御魂選擇</strong>
+    </td>
+    <td align="center" width="50%">
+      <img src="./src/pokemonlike.png" alt="戰國對戰畫面" width="360" />
+      <br />
+      <strong>戰鬥場景</strong>
+    </td>
+  </tr>
+</table>
+
+Prompt:
+
+```text
+Use $generate2dsprite to create a 2D game similar to Pokemon. You only need to build one scene for now. It must include a starter monster selection mechanic, a battle screen, and all basic gameplay functions. I would like you to design all the elements and the story, and you can also decide which game engine to use. Use this skill to create any assets you need. The story should be set in the Sengoku period. Can you try putting this together for me?
+Please also pay attention to the size of the elements (the generated sprites need to be proportionally correct when placed into the game), and a game map must be generated as well. Basically, just help me make a game like this—I believe you won't have any problem doing this with that skill! Just one scene is enough, and there's no need for too many monster characters. Let's just start with a few, and we can slowly expand on it later!
+```
+
+這是一個以 Codex 為核心的 2D sprite 生成 skill,用來產出可直接拿去做遊戲資產的 pixel art。
 
 這個 repo 目前只放一個通用型 skill：
 
