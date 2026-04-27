@@ -51,7 +51,7 @@ When unspecified:
 
 3. Produce assets.
    - For baked raster maps, generate or edit one background and optional collision/zones metadata.
-   - For layered raster maps, generate a ground-only base map plus separate props or prop packs.
+   - For layered raster maps, generate a ground-only base map first. Then show that base image in context and generate a dressed reference from the visible base before making final props and placements.
    - For tilemaps, follow the engine/editor format; do not force image-generation-only maps into tilemaps.
    - For parallax scenes, produce background/midground/foreground layers and scroll metadata.
 
@@ -74,7 +74,16 @@ Use `$generate2dsprite` for reusable transparent props, but choose the generatio
 
 Prop packs save image-generation calls and prompt overhead, but reduce per-prop control. Use them for rocks, shrubs, barrels, small signs, lamps, crates, floor ornaments, plants, and repeated environmental props. Do not use prop packs for buildings, gates, trees with wide canopies, character-like statues, hero objects, or anything that must be pixel-perfect.
 
-Use `scripts/extract_prop_pack.py` after generating a solid-magenta prop sheet. Use `scripts/compose_layered_preview.py` to verify placement over the base map.
+For layered maps with generated props, prefer this reference pipeline:
+
+1. Generate `assets/map/<name>-base.png` as ground-only terrain.
+2. Make the base image visible in conversation context. If the base is a local file, use `view_image` before calling built-in `image_gen`; do not rely on a path string as the reference.
+3. Generate `assets/map/<name>-dressed-reference.png` from the visible base, preserving camera, terrain, size, road/water shapes, anchor pads, and boundaries. Treat this as a planning/reference image, not the final runtime map.
+4. Generate one-by-one props or a prop pack based on the dressed reference.
+5. Place extracted props over the original base and compose a flattened preview.
+6. Validate that base, dressed reference, and preview dimensions match.
+
+Use `scripts/extract_prop_pack.py` after generating a solid-magenta prop sheet. If the sheet has antialiased magenta fringe, run the imagegen chroma-key helper with soft matte and despill before extraction, then extract from the alpha-cleaned sheet. Use `scripts/compose_layered_preview.py` to verify placement over the base map.
 
 ## Expected Deliverables
 
@@ -89,6 +98,7 @@ For a layered raster map:
 
 - `assets/map/<name>-base.png`
 - `assets/map/<name>-base.prompt.txt`
+- optional `assets/map/<name>-dressed-reference.png` for prop planning
 - `assets/props/<prop>/prop.png` folders, from one-by-one props or extracted prop packs
 - `data/<name>-props.json` placement metadata
 - `data/<name>-collision.json` and/or `data/<name>-zones.json` when gameplay needs them

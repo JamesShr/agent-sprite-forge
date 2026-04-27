@@ -173,7 +173,7 @@ Please also pay attention to the size of the elements (the generated sprites nee
 
 ### 分層 RPG 地圖 / Base + Prop Pack
 
-`$generate2dmap` 現在會把地圖視為一個 production pipeline，而不是單純四選一的策略。它會選擇 visual model、runtime object model、collision model 和 export target。對分層 raster map 來說，它可以先生成 ground-only base map，再把小型 props 批次做成 3x3 prop pack，切割成透明 props，寫入 y-sort placement metadata，最後合成 flattened preview。
+`$generate2dmap` 現在會把地圖視為一個 production pipeline，而不是單純四選一的策略。它會選擇 visual model、runtime object model、collision model 和 export target。對分層 raster map 來說，它可以先生成 ground-only base map，再把這張 base 顯示在對話中作為 wrapper reference，生成 dressed planning pass，接著把小型 props 批次做成 3x3 prop pack，切割成透明 props，寫入 y-sort placement metadata，最後合成 flattened preview。
 
 <table>
   <tr>
@@ -202,6 +202,14 @@ Pipeline：
 layered_raster + y_sorted_props + precise_shapes + trigger_zones + raw_canvas
 ```
 
+使用 reference 的分層地圖流程：
+
+1. 先生成 ground-only base map。
+2. 把 base map 顯示在對話上下文，再根據它生成 dressed reference。
+3. 依 dressed reference 生成單張 props，或生成有足夠留白的 prop pack。
+4. 如果有洋紅邊，先用 soft-matte chroma-key cleanup 加 despill，再切出透明 props。
+5. 最終 runtime preview 由原始 base map 加上切好的透明 props 合成。
+
 這是一組以 Codex 為核心的 2D game asset skills，用來產出可直接拿去做遊戲資產與可玩地圖場景的 pixel art。
 
 這個 repo 目前提供兩個 skills：
@@ -210,6 +218,8 @@ layered_raster + y_sorted_props + precise_shapes + trigger_zones + raw_canvas
 - [`skills/generate2dmap`](./skills/generate2dmap)：選擇 2D map pipeline，生成 base map 或 prop pack，切出透明 props，合成 preview，並產出 collision / zones metadata。
 
 `$generate2dmap` 只有在選定的地圖 pipeline 需要可重用透明 props 時，才會使用 `$generate2dsprite`。小型環境物件可以批次生成為 `2x2`、`3x3` 或 `4x4` prop pack，再切成個別透明 props。簡單地圖可以維持單張 baked image。
+
+當流程需要視覺 reference 時，兩個 skills 都遵守同一個 wrapper 規則：先讓圖片出現在對話上下文。使用者上傳的圖片與剛生成的圖片已經在上下文中；local file 則先用 `view_image` 打開，再要求內建 image generation 保留角色 identity、風格、地圖 layout 或 sprite 進化脈絡。
 
 之所以先以 Codex 為主，是因為 Codex 本身就有內建 image generation，所以整個流程可以留在同一個 agent 內完成：
 
@@ -230,8 +240,10 @@ layered_raster + y_sorted_props + precise_shapes + trigger_zones + raw_canvas
 - Impact / explosion
 - FX sheet
 - 小型 bundle，例如 `unit_bundle`、`spell_bundle`、`combat_bundle`
+- 依 reference 生成的 sprite 變體、動畫 sheet 與進化線
 - 單張 baked 2D map
 - base map + 透明 props 的分層地圖
+- 依 dressed reference 規劃 props 擺放的分層地圖
 - `2x2`、`3x3`、`4x4` 這類 2D map prop pack
 - 可玩地圖用的 collision / zone metadata
 - 給 QA 與 showcase 用的 flattened map preview

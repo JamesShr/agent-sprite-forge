@@ -173,7 +173,7 @@ Please also pay attention to the size of the elements (the generated sprites nee
 
 ### Layered RPG Map / Base + Prop Pack
 
-`$generate2dmap` now models maps as a production pipeline instead of a single strategy label. It chooses a visual model, runtime object model, collision model, and export target. For layered raster maps it can generate a ground-only base map, batch small props into a 3x3 prop pack, extract transparent props, place them with y-sort metadata, and compose a flattened preview.
+`$generate2dmap` now models maps as a production pipeline instead of a single strategy label. It chooses a visual model, runtime object model, collision model, and export target. For layered raster maps it can generate a ground-only base map, use that visible base as a wrapper reference for a dressed planning pass, batch small props into a 3x3 prop pack, extract transparent props, place them with y-sort metadata, and compose a flattened preview.
 
 <table>
   <tr>
@@ -202,6 +202,14 @@ Pipeline:
 layered_raster + y_sorted_props + precise_shapes + trigger_zones + raw_canvas
 ```
 
+Reference-guided layered maps use this flow:
+
+1. Generate a ground-only base map.
+2. Show the base map in the conversation context and generate a dressed reference from it.
+3. Generate one-by-one props or a tightly margined prop pack from the dressed reference.
+4. Run soft-matte chroma-key cleanup with despill before extracting props when magenta fringe appears.
+5. Compose the final runtime preview from the original base plus extracted transparent props.
+
 Codex-first 2D game asset skills for game-ready pixel assets and playable map scenes.
 
 This repository currently ships two skills:
@@ -210,6 +218,8 @@ This repository currently ships two skills:
 - [`skills/generate2dmap`](./skills/generate2dmap): choose a 2D map pipeline, generate base maps or prop packs, extract transparent props, compose previews, and produce collision/zones metadata.
 
 `$generate2dmap` uses `$generate2dsprite` when the chosen map pipeline needs reusable transparent props. Small environmental props can be batched into `2x2`, `3x3`, or `4x4` prop packs, then extracted into individual transparent props. Simple maps can stay as a single baked image.
+
+When a visual reference is involved, both skills use the same wrapper rule: make the image visible in the conversation first. Attached images and freshly generated images are already visible; local files should be opened with `view_image` before asking built-in image generation to preserve identity, style, map layout, or sprite lineage.
 
 Codex is the primary target because Codex already has built-in image generation. That lets one agent handle the full loop:
 
@@ -230,8 +240,10 @@ The current focus is 2D game assets and map scenes, not full game-pack automatio
 - Impacts and explosions
 - FX sheets
 - Small bundles such as `unit_bundle`, `spell_bundle`, and `combat_bundle`
+- Reference-guided sprite variants, animation sheets, and evolution lines
 - Single baked 2D maps
 - Layered base maps with transparent props
+- Dressed-reference guided layered maps
 - 2D map prop packs such as `2x2`, `3x3`, and `4x4`
 - Collision and zone metadata for playable maps
 - Flattened map previews for QA and showcase

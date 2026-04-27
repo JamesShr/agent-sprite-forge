@@ -34,11 +34,36 @@ Use `$generate2dsprite` when the map needs reusable transparent props. Choose on
 
 Read [prop-pack-contract.md](prop-pack-contract.md) before batching props.
 
+## Dressed Reference Pass
+
+For generated layered raster maps, use a dressed reference pass before final prop extraction:
+
+1. Generate the base as ground-only terrain.
+2. Make the base visible to built-in `image_gen`. If the base exists as a local file, call `view_image` first; do not expect a filesystem path in the prompt to work as the visual reference.
+3. Ask for a dressed-reference version of the same map by adding props only.
+4. Preserve exact camera, framing, dimensions, terrain, paths, water, anchor pads, collision-relevant boundaries, and map edges.
+5. Use the dressed reference to choose prop identities and placement coordinates, but compose the final runtime preview from the original base plus extracted transparent props.
+
+The dressed reference is a planning artifact. Do not ship it as the only runtime map when props need collision, y-sort, occlusion, or reuse.
+
+Prompt shape:
+
+```text
+Use the image just shown as the exact base map reference.
+Create a dressed-reference version of the same map by adding props only.
+Preserve exactly: camera, framing, image size, terrain, paths, water, anchor pads, rocks, map boundaries, and all walkable routes.
+Do not crop, zoom, rotate, repaint, or redesign the terrain.
+Add these props naturally on top of the existing map: <list>.
+Props should feel intentionally placed along paths, landmarks, encounter-zone edges, rest points, and entrances.
+No UI, no text, no labels, no watermark.
+```
+
 ## One-By-One Prop Prompt Pattern
 
 ```text
 Create a single <prop> prop for a top-down 2D pixel-art RPG map.
-3/4 view from slightly above, full object visible, centered, crisp dark pixel outlines.
+Mostly front-facing top-down RPG object view: upright objects are vertical and centered, with only a small visible top face. Avoid strong isometric diagonal rotation.
+Full object visible, centered, crisp dark pixel outlines.
 Background must be 100% solid flat #FF00FF magenta, no gradients, no texture, no shadows, no floor plane.
 No text, labels, UI, or watermark.
 Entire prop must fit fully inside the image with generous magenta margin on all sides; no part may touch or cross the image edge.
