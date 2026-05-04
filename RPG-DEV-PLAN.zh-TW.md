@@ -154,6 +154,64 @@ if (cursors.left.isDown) {
 
 ---
 
+## 最小可玩移動版任務清單（建議先完成）
+
+> 目標：只完成「角色可在地圖上順暢移動」的可玩版本，不含生命值、技能、飛行物與戰鬥邏輯。
+
+### Task A — 專案與素材佈局
+- [ ] 建立前端專案（Vite + Phaser 3）
+- [ ] 建立素材路徑結構：
+  - `public/assets/sprites/{CHARACTER-NAME}/walk.png`
+  - `public/assets/sprites/{CHARACTER-NAME}/idle.png`
+  - `public/assets/maps/forest-clearing/`
+- [ ] 將 `output/{CHARACTER-NAME}/action/walk` 與 `output/{CHARACTER-NAME}/action/idle` 的最終圖整理進上述路徑
+- [ ] 建立 `src/scenes/MainScene.js`（或 `.ts`）並完成基本 `preload/create/update` 骨架
+
+### Task B — 動畫命名規則與實作
+- [ ] 統一動畫 key 規則：`<角色>-<狀態>-<方向>`
+- [ ] 行走動畫 key：
+  - `{CHARACTER-NAME}-walk-down`
+  - `{CHARACTER-NAME}-walk-left`
+  - `{CHARACTER-NAME}-walk-right`
+  - `{CHARACTER-NAME}-walk-up`
+- [ ] 閒置動畫 key：
+  - `{CHARACTER-NAME}-idle-down`
+  - `{CHARACTER-NAME}-idle-left`
+  - `{CHARACTER-NAME}-idle-right`
+  - `{CHARACTER-NAME}-idle-up`
+- [ ] 設定 row 對應（4x4 walk）：
+  - Row 0 = down, Row 1 = left, Row 2 = right, Row 3 = up
+- [ ] 設定移動速度與動畫播放速率（建議：speed 140~180、walk frameRate 8）
+
+### Task C — 地圖、碰撞與鏡頭
+- [ ] 載入地圖底圖（先用你剛產生的空白地圖）
+- [ ] 建立 `collision` 圖層或碰撞區塊資料（可先用簡易矩形區塊）
+- [ ] 角色加入 Arcade Physics，並啟用與碰撞層的 collision
+- [ ] 設定攝影機跟隨角色：`camera.startFollow(player)`
+- [ ] 限制攝影機邊界與世界邊界一致，避免看到地圖外區域
+
+### Task D — 輸入與狀態切換
+- [ ] 鍵盤輸入：方向鍵 + WASD（擇一或同時支援）
+- [ ] 支援斜向移動時速度正規化（避免斜向比直向快）
+- [ ] 無輸入時播放最後朝向對應的 idle 動畫
+- [ ] 切換場景或重載後，角色預設朝向一致（建議 down）
+
+### Task E — 驗收標準（Definition of Done）
+- [ ] 可在地圖上連續移動 3 分鐘，無卡頓與無明顯掉幀
+- [ ] 四方向 walk/idle 均能正確切換，無錯誤 frame 對應
+- [ ] 角色無法穿越碰撞區域
+- [ ] 攝影機全程平滑跟隨，且不超出地圖邊界
+- [ ] 重新整理頁面後，遊戲可正常進入並操作（無 console error）
+
+### Task F — 時間建議（1~2 週）
+- [ ] Day 1~2：Task A（專案與素材路徑）
+- [ ] Day 3~4：Task B（動畫定義與命名統一）
+- [ ] Day 5~6：Task C（碰撞與鏡頭）
+- [ ] Day 7：Task D（輸入細節與 idle 朝向）
+- [ ] Day 8：Task E（驗收、修正、整理）
+
+---
+
 ## 何時考慮遷移至 Unity
 
 以下條件成立時可評估遷移：
