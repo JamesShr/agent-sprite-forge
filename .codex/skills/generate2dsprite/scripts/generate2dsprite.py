@@ -888,9 +888,6 @@ def cmd_process(args: argparse.Namespace) -> None:
         raw.save(out_dir / "raw.png")
         centered = center_single_sprite(raw, args.single_size, args.threshold, args.edge_threshold)
         centered.save(out_dir / "clean.png")
-        # Keep single-sprite outputs compatible with the shared sprite pipeline contract.
-        centered.save(out_dir / "sheet-transparent.png")
-        save_transparent_gif([centered], out_dir / "animation.gif", args.duration)
         metadata["single_size"] = args.single_size
 
     if args.prompt_file and args.prompt_file.exists():

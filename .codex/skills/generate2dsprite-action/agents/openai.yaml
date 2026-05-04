@@ -1,0 +1,4 @@
+interface:
+  display_name: "Generate 2D Sprite Action"
+  short_description: "Create animation (6-8 frames) anchored to origin sprite"
+  default_prompt: "Use $generate2dsprite-action with character_name=elder-samurai and action_type=idle to create an 8-frame idle animation."
