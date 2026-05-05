@@ -163,7 +163,7 @@ if (cursors.left.isDown) {
 - [ ] 建立素材路徑結構：
   - `public/assets/sprites/{CHARACTER-NAME}/walk.png`
   - `public/assets/sprites/{CHARACTER-NAME}/idle.png`
-  - `public/assets/maps/forest-clearing/`
+  - `public/assets/maps/{map-name}/`
 - [ ] 將 `output/{CHARACTER-NAME}/action/walk` 與 `output/{CHARACTER-NAME}/action/idle` 的最終圖整理進上述路徑
 - [ ] 建立 `src/scenes/MainScene.js`（或 `.ts`）並完成基本 `preload/create/update` 骨架
 
