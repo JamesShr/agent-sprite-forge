@@ -31,6 +31,16 @@ Use these rules when the user attaches a reference, points to a local image, ask
 - For evolution lines, keep visible lineage markers while allowing larger silhouette, added details, or stronger colors per form.
 - Keep the normal magenta-background and containment rules even when using a reference.
 
+## Cell Ratio Rules
+
+Always look up the asset's `cell_ratio` in [size-scale.md](size-scale.md) before writing the prompt.
+
+- `cell_ratio` controls the pixel dimensions of each cell (e.g. 1:1 = 128×128, 2:3 = 128×192).
+- Subject fill and margin inside the cell must be consistent across all sheets for the same character.
+- **Do not embed display scale into the sprite.** Character size relative to other characters is handled by Phaser `setScale` at runtime.
+- Every action sheet for the same character must use the same cell_ratio and fill_margin.
+- When using a reference image also add: `preserve the same subject fill ratio and margin from the reference image`.
+
 ## Containment Rules
 
 For any sheet mode, say this explicitly when consistency matters:

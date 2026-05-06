@@ -18,6 +18,8 @@ Infer these from the user request:
 - `view`: `topdown` | `side` | `3/4`
 - `sheet`: `auto` | `1x4` | `2x2` | `2x3` | `3x3` | `4x4`
 - `frames`: `auto` or explicit count
+- `cell_ratio`: `1:1` | `2:3` | `3:2` | `3:4` | `4:3` — pixel dimensions of each cell; read [references/size-scale.md](references/size-scale.md) for per-asset-type defaults
+- `fill_margin`: `tight` | `normal` | `safe` — how much magenta margin surrounds the subject inside the cell (display scale is handled in Phaser at runtime, not here)
 - `bundle`: `single_asset` | `unit_bundle` | `spell_bundle` | `combat_bundle` | `line_bundle`
 - `effect_policy`: `all` | `largest`
 - `anchor`: `center` | `bottom` | `feet`

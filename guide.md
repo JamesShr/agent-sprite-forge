@@ -1,10 +1,36 @@
 ## new phase1  Generate Origin Sprite
 
+### Sprite Cell Ratio And Size Responsibility
+
+Use these rules for all future generation requests:
+
+- Define sprite cell shape at generation time with `cell_ratio`.
+- Define subject occupancy with `fill_margin`.
+- Keep one character's `cell_ratio` and `fill_margin` consistent across origin, idle, walk, run, jump, and attack.
+- Do not use generation prompts to encode relative in-game height between different characters.
+- Relative in-game size is handled in Phaser runtime with `setScale()`.
+
+Cell ratio format:
+
+- `1:1` = 128 x 128 per cell
+- `3:4` = 96 x 128 per cell
+- `4:3` = 128 x 96 per cell
+- `2:3` = 128 x 192 per cell
+- `3:2` = 192 x 128 per cell
+
+Fill margin format:
+
+- `tight`: subject fills around 85-90% of the cell
+- `normal`: subject fills around 70-80% of the cell
+- `safe`: subject fills around 55-65% of the cell
+
 Use $generate2dsprite-origin with the following parameters:
 
 character_name: kebab-case identifier (e.g., elder-samurai, fire-wizard)
 character_concept: Brief description of the character (silhouette, costume, key features, expression)
 facing_direction: sse (south-southeast, default) | nne (north-northeast) | frontal
+cell_ratio: 1:1 | 3:4 | 4:3 | 2:3 | 3:2 (default: 1:1)
+fill_margin: tight | normal | safe (default: normal)
 output_base_path: Optional override (default: output)
 
 ```
@@ -12,6 +38,8 @@ Use $generate2dsprite-origin to create a character origin sprite:
 - character_name: "elder-samurai"
 - character_concept: "elderly samurai with stern expression, white beard, white kimono, holding wooden staff"
 - facing_direction: "sse"
+- cell_ratio: "1:1"
+- fill_margin: "normal"
 
 Output location: output/elder-samurai/origin/
 Expected files:
@@ -32,6 +60,8 @@ Use $generate2dsprite-action to create an idle animation:
 - character_name: "elder-samurai"
 - action_type: "idle"
 - target_frames: 8
+- cell_ratio: "1:1"
+- fill_margin: "normal"
 
 Output location: output/elder-samurai/action/idle/
 Expected files:
@@ -57,6 +87,8 @@ Use $generate2dsprite-action to create a walk animation:
 - character_name: "elder-samurai"
 - action_type: "walk"
 - target_frames: 8
+- cell_ratio: "1:1"
+- fill_margin: "normal"
 
 Output location: output/elder-samurai/action/walk/
 Expected files:
@@ -83,6 +115,8 @@ Use $generate2dsprite-action to create a run animation:
 - character_name: "elder-samurai"
 - action_type: "run"
 - target_frames: 8
+- cell_ratio: "1:1"
+- fill_margin: "normal"
 
 Output location: output/elder-samurai/action/run/
 Expected files:
@@ -109,6 +143,8 @@ Use $generate2dsprite-action to create a jump animation:
 - character_name: "elder-samurai"
 - action_type: "jump"
 - target_frames: 8
+- cell_ratio: "1:1"
+- fill_margin: "normal"
 
 Output location: output/elder-samurai/action/jump/
 Expected files:
