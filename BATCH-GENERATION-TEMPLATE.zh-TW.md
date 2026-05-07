@@ -13,9 +13,10 @@
 | object-id | 類型 | idle 偵數 | sheet 模式 | 朝向策略 | 生態/場景 | 材質 | 主色 | 互動狀態描述 | 備註 |
 |---|---|---|---|---|---|---|
 | chest-wood | chest | 1 | single | left/up native, right/down mirrored | town | wood+iron | brown+gold | closed idle only | 一次性可開啟（開啟狀態可另做） |
-| fence-wood | fence | 1 | single | left/up native, right/down mirrored | town | wood | brown | static fence segment | 可阻擋移動物件 |
-| fence-wood-long | fence | 1 | single | left/up native, right/down mirrored | town | wood | brown | long straight fence segment | 可阻擋移動物件 |
-| fence-wood-corner | fence | 1 | single | left/up native, right/down mirrored | town | wood | brown | L-shape corner fence segment | 可阻擋移動物件 |
+| fence-wood | fence | 1 | single | axis-aligned only (horizontal/vertical), mirror-safe | town | wood | brown | static blocker fence segment | 只做移動範圍限制；禁止斜角 |
+| fence-wood-vertical | fence | 1 | single | axis-aligned only (vertical), mirror-safe | town | wood | brown | vertical blocker fence segment | 獨立路徑；與 fence-wood 分開 |
+| fence-wood-long | fence | 1 | single | axis-aligned only (horizontal/vertical), mirror-safe | town | wood | brown | long straight blocker fence segment | 只做移動範圍限制；禁止斜角 |
+| fence-wood-corner | fence | 1 | single | axis-aligned only (L-corner), mirror-safe | town | wood | brown | L-shape blocker corner fence segment | 只做移動範圍限制；禁止斜角 |
 | warp-circle | warp-circle | 4 | 2x2 | non-directional | shrine | stone+magic rune | cyan+blue | faint -> pulse -> peak -> settle | 站上去可傳送 |
 | rock-mossy | rock | 1 | single | left/up native, right/down mirrored | forest | stone+moss | gray+green | idle static only | 主要作阻擋 |
 | grass | grass | 4 | 2x2 | non-directional | field | living grass tufts | green+yellow-green | neutral -> sway-a -> sway-b -> neutral | 場景裝飾，可循環微動畫 |
@@ -140,9 +141,10 @@ No text, no UI, no watermark, no edge crossing.
 ```text
 Create exactly one single pixel-art sprite output for a 2.5D side-scrolling RPG interactive object.
 Object identity: fence-wood, type fence, biome town, material aged wood planks and posts, color accents brown and dark-brown.
-Direction policy: left/up native, right/down mirrored.
+Direction policy: axis-aligned only; do not draw any diagonal orientation.
 Frame plan: one static idle frame.
-View: side-view fence segment at roughly 45-degree upward tilt, readable as a movement blocker.
+View: side-view fence segment readable as a movement blocker; only horizontal or vertical layout.
+Aspect ratio policy: horizontal variant must be 4:3 or 2:1; vertical variant must be 3:4 or 1:2.
 Keep same identity, same scale, same bounding box.
 Keep at least 8% to 12% magenta margin from silhouette to each edge.
 Object fully inside frame with generous margin.
@@ -152,7 +154,61 @@ No text, no UI, no watermark, no edge crossing.
 
 輸出到：`output/object/fence-wood/`
 
-### 5) grass
+### 5) fence-wood-vertical
+
+```text
+Create exactly one single pixel-art sprite output for a 2.5D side-scrolling RPG interactive object.
+Object identity: fence-wood-vertical, type fence, biome town, material aged wood planks and posts, color accents brown and dark-brown.
+Direction policy: axis-aligned only; vertical layout only; do not draw any diagonal orientation.
+Frame plan: one static idle frame.
+View: side-view vertical fence segment readable as a movement blocker.
+Aspect ratio policy: vertical variant must be 3:4 or 1:2.
+Keep same identity, same scale, same bounding box.
+Keep at least 8% to 12% magenta margin from silhouette to each edge.
+Object fully inside frame with generous margin.
+Background 100% solid #FF00FF magenta.
+No text, no UI, no watermark, no edge crossing.
+```
+
+輸出到：`output/object/fence-wood-vertical/`
+
+### 6) fence-wood-long
+
+```text
+Create exactly one single pixel-art sprite output for a 2.5D side-scrolling RPG interactive object.
+Object identity: fence-wood-long, type fence, biome town, material aged wood planks and posts, color accents brown and dark-brown.
+Direction policy: axis-aligned only; do not draw any diagonal orientation.
+Frame plan: one static idle frame.
+View: side-view long straight fence segment readable as a movement blocker; only horizontal or vertical layout.
+Aspect ratio policy: horizontal variant must be 4:3 or 2:1; vertical variant must be 3:4 or 1:2.
+Keep same identity, same scale, same bounding box.
+Keep at least 8% to 12% magenta margin from silhouette to each edge.
+Object fully inside frame with generous margin.
+Background 100% solid #FF00FF magenta.
+No text, no UI, no watermark, no edge crossing.
+```
+
+輸出到：`output/object/fence-wood-long/`
+
+### 7) fence-wood-corner
+
+```text
+Create exactly one single pixel-art sprite output for a 2.5D side-scrolling RPG interactive object.
+Object identity: fence-wood-corner, type fence, biome town, material aged wood planks and posts, color accents brown and dark-brown.
+Direction policy: axis-aligned only; do not draw any diagonal orientation.
+Frame plan: one static idle frame.
+View: side-view L-shaped corner fence segment readable as a movement blocker; corner arms must stay horizontal/vertical only.
+Aspect ratio policy: each horizontal arm must read as 4:3 or 2:1, and each vertical arm must read as 3:4 or 1:2.
+Keep same identity, same scale, same bounding box.
+Keep at least 8% to 12% magenta margin from silhouette to each edge.
+Object fully inside frame with generous margin.
+Background 100% solid #FF00FF magenta.
+No text, no UI, no watermark, no edge crossing.
+```
+
+輸出到：`output/object/fence-wood-corner/`
+
+### 8) grass
 
 ```text
 Create exactly one 2x2 pixel-art sprite sheet for a 2.5D side-scrolling RPG interactive object.
@@ -194,6 +250,7 @@ No text, no UI, no watermark, no edge crossing.
 |---|---|---|---|---|
 | rock-mossy | true | false | none | 純阻擋物件 |
 | fence-wood | true | false | none | 純阻擋物件 |
+| fence-wood-vertical | true | false | none | 純阻擋物件（垂直版，獨立路徑） |
 | fence-wood-long | true | false | none | 純阻擋物件 |
 | fence-wood-corner | true | false | none | 純阻擋物件 |
 | chest-wood | true | true | loot | 可互動開箱 |
