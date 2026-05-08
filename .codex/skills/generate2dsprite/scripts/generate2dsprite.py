@@ -8,7 +8,6 @@ import hashlib
 import json
 import math
 import random
-import re
 from collections import deque
 from pathlib import Path
 from statistics import median
@@ -182,10 +181,6 @@ VIBES = ["elegant and swift", "brutal and heavy", "mysterious and dark", "sacred
 def stable_seed(target: str, mode: str, prompt: str, role: str) -> int:
     raw = f"{target}|{mode}|{prompt}|{role}".encode("utf-8")
     return int(hashlib.sha256(raw).hexdigest()[:8], 16)
-
-
-def is_known_target_mode(target: str, mode: str) -> bool:
-    return target in TARGET_MODES and mode in TARGET_MODES[target]
 
 
 def ensure_valid_target_mode(target: str, mode: str) -> None:
@@ -552,7 +547,8 @@ def split_grid(
     img: Image.Image,
     rows: int,
     cols: int,
-    cell_size: int,
+    cell_width_out: int,
+    cell_height_out: int,
     threshold: int,
     edge_threshold: int,
     fit_scale: float = 0.85,
@@ -564,6 +560,7 @@ def split_grid(
     component_padding: int = 0,
     min_component_area: int = 1,
     edge_touch_margin: int = 0,
+    preserve_native_scale: bool = False,
 ) -> tuple[list[Image.Image], list[dict[str, object]]]:
     cleaned = remove_bg_magenta(img.convert("RGBA"), threshold, edge_threshold)
     width, height = cleaned.size
@@ -603,28 +600,52 @@ def split_grid(
             )
 
     common_scale = None
+    max_width = 0
+    max_height = 0
     if shared_scale:
         max_width = max((frame.size[0] for frame in cropped_frames), default=0)
         max_height = max((frame.size[1] for frame in cropped_frames), default=0)
         if max_width > 0 and max_height > 0:
-            common_scale = min(cell_size / max_width, cell_size / max_height) * fit_scale
+            common_scale = min(cell_width_out / max_width, cell_height_out / max_height) * fit_scale
 
     frames: list[Image.Image] = []
     for index, frame in enumerate(cropped_frames):
         frame_width, frame_height = frame.size
-        canvas = Image.new("RGBA", (cell_size, cell_size), (0, 0, 0, 0))
+        canvas = Image.new("RGBA", (cell_width_out, cell_height_out), (0, 0, 0, 0))
         if frame_width > 0 and frame_height > 0:
-            scale = common_scale or (min(cell_size / frame_width, cell_size / frame_height) * fit_scale)
-            new_width = max(1, int(frame_width * scale))
-            new_height = max(1, int(frame_height * scale))
-            frame = frame.resize((new_width, new_height), Image.Resampling.LANCZOS)
-            paste_x = (cell_size - new_width) // 2
-            if align in {"bottom", "feet"}:
-                pad = max(0, int(cell_size * (1 - fit_scale) * 0.5))
-                paste_y = cell_size - new_height - pad
+            if preserve_native_scale:
+                new_width = frame_width
+                new_height = frame_height
+                paste_x = (cell_width_out - new_width) // 2
+                if align in {"bottom", "feet"}:
+                    paste_y = cell_height_out - new_height
+                else:
+                    paste_y = (cell_height_out - new_height) // 2
+                canvas.paste(frame, (paste_x, paste_y), frame)
             else:
-                paste_y = (cell_size - new_height) // 2
-            canvas.paste(frame, (paste_x, paste_y))
+                if shared_scale and common_scale and max_width > 0 and max_height > 0:
+                    shared_canvas = Image.new("RGBA", (max_width, max_height), (0, 0, 0, 0))
+                    shared_paste_x = (max_width - frame_width) // 2
+                    if align in {"bottom", "feet"}:
+                        shared_paste_y = max_height - frame_height
+                    else:
+                        shared_paste_y = (max_height - frame_height) // 2
+                    shared_canvas.paste(frame, (shared_paste_x, shared_paste_y))
+                    frame = shared_canvas
+                    frame_width, frame_height = frame.size
+                    scale = common_scale
+                else:
+                    scale = min(cell_width_out / frame_width, cell_height_out / frame_height) * fit_scale
+                new_width = max(1, int(frame_width * scale))
+                new_height = max(1, int(frame_height * scale))
+                frame = frame.resize((new_width, new_height), Image.Resampling.LANCZOS)
+                paste_x = (cell_width_out - new_width) // 2
+                if align in {"bottom", "feet"}:
+                    pad = max(0, int(cell_height_out * (1 - fit_scale) * 0.5))
+                    paste_y = cell_height_out - new_height - pad
+                else:
+                    paste_y = (cell_height_out - new_height) // 2
+                canvas.paste(frame, (paste_x, paste_y))
             frame_info[index]["output_size"] = [new_width, new_height]
             frame_info[index]["paste_position"] = [paste_x, paste_y]
         else:
@@ -634,11 +655,13 @@ def split_grid(
     return frames, frame_info
 
 
-def compose_sheet(frames: list[Image.Image], rows: int, cols: int, cell_size: int) -> Image.Image:
-    canvas = Image.new("RGBA", (cols * cell_size, rows * cell_size), (0, 0, 0, 0))
+def compose_sheet(
+    frames: list[Image.Image], rows: int, cols: int, cell_width: int, cell_height: int
+) -> Image.Image:
+    canvas = Image.new("RGBA", (cols * cell_width, rows * cell_height), (0, 0, 0, 0))
     for index, frame in enumerate(frames):
         row, col = divmod(index, cols)
-        canvas.paste(frame, (col * cell_size, row * cell_size), frame)
+        canvas.paste(frame, (col * cell_width, row * cell_height), frame)
     return canvas
 
 
@@ -706,11 +729,6 @@ def save_transparent_gif(frames: list[Image.Image], out_path: Path, duration: in
     )
 
 
-def sanitize_slug(text: str) -> str:
-    slug = re.sub(r"[^a-zA-Z0-9]+", "-", text.strip().lower()).strip("-")
-    return slug or "sprite"
-
-
 def cmd_list_options() -> None:
     print(
         json.dumps(
@@ -759,6 +777,7 @@ def cmd_process(args: argparse.Namespace) -> None:
         raise ValueError("--aspect-ratio-target must be greater than 0.")
     if args.aspect_ratio_tolerance < 0:
         raise ValueError("--aspect-ratio-tolerance must be >= 0.")
+    preserve_native_scale = not args.normalize_scale
 
     out_dir = args.output_dir
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -784,7 +803,15 @@ def cmd_process(args: argparse.Namespace) -> None:
             rows, cols = args.rows, args.cols
         else:
             rows, cols = GRID_SHAPES[args.mode]
-        cell_size = args.cell_size or (96 if (rows, cols) == (4, 4) else 128)
+        source_cell_width = raw.width // cols
+        source_cell_height = raw.height // rows
+        if preserve_native_scale and args.cell_width is None and args.cell_height is None and args.cell_size is None:
+            cell_width = source_cell_width
+            cell_height = source_cell_height
+        else:
+            default_cell_size = 96 if (rows, cols) == (4, 4) else 128
+            cell_width = args.cell_width or args.cell_size or default_cell_size
+            cell_height = args.cell_height or args.cell_size or default_cell_size
         raw.save(out_dir / "raw-sheet.png")
         cleaned = remove_bg_magenta(raw.copy(), args.threshold, args.edge_threshold)
         cleaned.save(out_dir / "raw-sheet-clean.png")
@@ -793,7 +820,8 @@ def cmd_process(args: argparse.Namespace) -> None:
             raw,
             rows,
             cols,
-            cell_size,
+            cell_width,
+            cell_height,
             args.threshold,
             args.edge_threshold,
             fit_scale=args.fit_scale,
@@ -805,6 +833,7 @@ def cmd_process(args: argparse.Namespace) -> None:
             component_padding=args.component_padding,
             min_component_area=args.min_component_area,
             edge_touch_margin=args.edge_touch_margin,
+            preserve_native_scale=preserve_native_scale,
         )
         aspect_ratio_target = args.aspect_ratio_target
         valid_ratios: list[float] = []
@@ -844,13 +873,15 @@ def cmd_process(args: argparse.Namespace) -> None:
         for label, frame in zip(labels, frames):
             frame.save(out_dir / f"{label}.png")
 
-        compose_sheet(frames, rows, cols, cell_size).save(out_dir / "sheet-transparent.png")
+        compose_sheet(frames, rows, cols, cell_width, cell_height).save(out_dir / "sheet-transparent.png")
 
         if args.mode == "player_sheet" and not has_custom_grid and (rows, cols) == (4, 4):
             directions = ["down", "left", "right", "up"]
             for row_index, direction in enumerate(directions):
                 row_frames = frames[row_index * cols : (row_index + 1) * cols]
-                compose_sheet(row_frames, 1, cols, cell_size).save(out_dir / f"{direction}-strip.png")
+                compose_sheet(row_frames, 1, cols, cell_width, cell_height).save(
+                    out_dir / f"{direction}-strip.png"
+                )
                 save_transparent_gif(row_frames, out_dir / f"{direction}.gif", args.duration)
             metadata["directions"] = directions
         else:
@@ -858,8 +889,10 @@ def cmd_process(args: argparse.Namespace) -> None:
 
         metadata["rows"] = rows
         metadata["cols"] = cols
-        metadata["cell_size"] = cell_size
+        metadata["cell_width"] = cell_width
+        metadata["cell_height"] = cell_height
         metadata["fit_scale"] = args.fit_scale
+        metadata["preserve_native_scale"] = preserve_native_scale
         metadata["trim_border"] = args.trim_border
         metadata["edge_clean_depth"] = args.edge_clean_depth
         metadata["align"] = args.align
@@ -886,9 +919,23 @@ def cmd_process(args: argparse.Namespace) -> None:
             )
     else:
         raw.save(out_dir / "raw.png")
-        centered = center_single_sprite(raw, args.single_size, args.threshold, args.edge_threshold)
-        centered.save(out_dir / "clean.png")
-        metadata["single_size"] = args.single_size
+        if preserve_native_scale:
+            cleaned = remove_bg_magenta(raw.copy(), args.threshold, args.edge_threshold)
+            bbox = cleaned.getbbox()
+            if bbox:
+                cleaned = cleaned.crop(bbox)
+            cleaned.save(out_dir / "clean.png")
+            # Keep single-sprite outputs compatible with the shared sprite pipeline contract.
+            cleaned.save(out_dir / "sheet-transparent.png")
+            save_transparent_gif([cleaned], out_dir / "animation.gif", args.duration)
+        else:
+            centered = center_single_sprite(raw, args.single_size, args.threshold, args.edge_threshold)
+            centered.save(out_dir / "clean.png")
+            # Keep single-sprite outputs compatible with the shared sprite pipeline contract.
+            centered.save(out_dir / "sheet-transparent.png")
+            save_transparent_gif([centered], out_dir / "animation.gif", args.duration)
+            metadata["single_size"] = args.single_size
+        metadata["preserve_native_scale"] = preserve_native_scale
 
     if args.prompt_file and args.prompt_file.exists():
         prompt_text = args.prompt_file.read_text(encoding="utf-8")
@@ -926,10 +973,17 @@ def build_parser() -> argparse.ArgumentParser:
     process_parser.add_argument("--threshold", type=int, default=100)
     process_parser.add_argument("--edge-threshold", type=int, default=150)
     process_parser.add_argument("--cell-size", type=int)
+    process_parser.add_argument("--cell-width", type=int)
+    process_parser.add_argument("--cell-height", type=int)
     process_parser.add_argument("--rows", type=int)
     process_parser.add_argument("--cols", type=int)
     process_parser.add_argument("--label-prefix")
     process_parser.add_argument("--fit-scale", type=float, default=0.85)
+    process_parser.add_argument(
+        "--normalize-scale",
+        action="store_true",
+        help="Enable frame resizing and scale normalization. Default behavior preserves native frame scale.",
+    )
     process_parser.add_argument("--trim-border", type=int, default=4)
     process_parser.add_argument("--edge-clean-depth", type=int, default=3)
     process_parser.add_argument("--align", choices=["center", "bottom", "feet"], default="center")

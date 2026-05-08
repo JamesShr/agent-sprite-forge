@@ -90,7 +90,8 @@ Keep these mappings working:
 
 ## Processor Defaults
 
-- use `shared_scale=true` for any multi-frame sheet unless inconsistent scale is intentional
+- default to native-scale processing (no resize normalization)
+- enable `--normalize-scale` only when a downstream compatibility task explicitly needs normalized frame size
 - use `align=bottom` or `feet` for grounded actors
 - use `align=center` for floating effects, projectiles, and detached FX
 - use `component_mode=largest` when raw sheets contain detached sparkles or edge debris
@@ -98,7 +99,8 @@ Keep these mappings working:
 
 ## Output Shape
 
-- any sheet mode: transparent sheet + per-frame PNGs + GIF
+- any sheet mode: `raw-sheet.png` + required `raw-sheet-clean.png` + per-frame PNGs + GIF
+- `sheet-transparent.png` remains optional compatibility output
 - `player_sheet`: plus direction strips and four GIFs
 - `single_asset`: cleaned transparent PNG
 - bundles: one output folder per asset inside the bundle root

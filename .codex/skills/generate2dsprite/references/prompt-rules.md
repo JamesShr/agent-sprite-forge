@@ -18,6 +18,13 @@ Always keep these constraints:
 - no borders or frames between cells
 - same asset identity across frames
 - same bounding box and same pixel scale across frames
+- for topdown actor requests, default facing direction is south-southeast (SSE) unless the user explicitly asks another direction
+
+## Runtime Output Rules
+
+- Background removal is required in postprocess.
+- Phaser runtime assets must use de-backgrounded outputs (cleaned sheet or cleaned frames).
+- Do not use magenta-background raw images as direct runtime sprites.
 
 ## Reference Rules
 
@@ -30,6 +37,17 @@ Use these rules when the user attaches a reference, points to a local image, ask
 - For animation sheets, preserve the same character identity in every cell and only change the animation pose or effect state.
 - For evolution lines, keep visible lineage markers while allowing larger silhouette, added details, or stronger colors per form.
 - Keep the normal magenta-background and containment rules even when using a reference.
+
+## Cell Ratio Rules
+
+Always look up the asset's `cell_ratio` in [size-scale.md](size-scale.md) before writing the prompt.
+
+- `cell_ratio` controls the pixel dimensions of each cell (e.g. 1:1 = 128×128, 2:3 = 128×192).
+- Subject fill and margin inside the cell must be consistent across all sheets for the same character.
+- **Do not embed display scale into the sprite.** Character size relative to other characters is handled by Phaser `setScale` at runtime.
+- In generation and raw postprocess, do not perform cross-character size normalization.
+- Every action sheet for the same character must use the same cell_ratio and fill_margin.
+- When using a reference image also add: `preserve the same subject fill ratio and margin from the reference image`.
 
 ## Containment Rules
 
@@ -55,6 +73,12 @@ If detached FX are required, say:
 - `topdown`: for overworld actors and player / NPC sheets
 - `side`: for projectiles, side-view units, impact FX
 - `3/4`: for creature battle sprites, bosses, showcase idles, side-view spellcasters
+
+## Facing Rules
+
+- Default topdown facing: south-southeast (SSE, slightly toward lower-right).
+- If the request specifies directional rows (for example 4x4 player sheet), follow that layout instead of SSE default.
+- Keep facing stable across frames unless the sheet definition explicitly requires direction changes.
 
 ## Character Style
 
